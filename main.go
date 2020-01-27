@@ -55,7 +55,7 @@ func update(screen *ebiten.Image) error {
 	//Do stuff goes here
 	//physics
 	screen.Fill(color.RGBA{0xff, 0xff, 0xff, 255})
-
+	spring()
 	drawArc(screen)
 	drawSprite(screen)
 	//updatePosition()
@@ -64,9 +64,7 @@ func update(screen *ebiten.Image) error {
 
 func main() {
 	initGraph()
-	for i := 0; i < 2; i++ {
-		spring()
-	}
+
 	if err := ebiten.Run(update, windowWidth, windowHeight, scale, windowTitle); err != nil {
 		log.Fatal(err)
 
@@ -87,6 +85,7 @@ func initGraph() {
 	grState.arcs[1] = append(grState.arcs[1], 2)
 	grState.arcs[2] = append(grState.arcs[2], 3)
 	grState.arcs[3] = append(grState.arcs[3], 0)
+	fmt.Println(grState.arcs)
 
 	grState.position[0].x = 151
 	grState.position[0].y = 201
@@ -99,6 +98,7 @@ func initGraph() {
 
 	grState.position[3].x = 300
 	grState.position[3].y = 250
+	fmt.Println(grState.position)
 	sprite = vertImg
 
 }
@@ -130,25 +130,28 @@ func spring() {
 	areaX := windowWidth
 	areaY := windowHeight
 	k := math.Sqrt(float64((areaX * areaY)) / float64(len(grState.position))) //optimal pairwise distance
-
 	//zero displacement vectors
 	for i := 0; i < len(grState.disp); i++ {
 		grState.disp[i] = vec{0, 0}
-	}
-	for i := 0; i < len(grState.position)-1; i++ {
-		for j := i + 1; j < len(grState.position); j++ {
-			fReplusiveSpring(i, j, k) //two indices and optimal pairwise distance
-		}
+
 	}
 
+	for i := 0; i < len(grState.position); i++ {
+		for j := 0; j < len(grState.position); j++ {
+			if i != j {
+				fReplusiveSpring(i, j, k) //two indices and optimal pairwise distance
+			}
+		}
+	}
 	for i := 0; i < len(grState.arcs); i++ {
 		if len(grState.arcs[i]) > 0 {
 			for j := 0; j < len(grState.arcs[i]); j++ {
-				fAttractiveSpring(i, j, k) //two indices and optimal pairwise distance
+				fAttractiveSpring(i, grState.arcs[i][j], k) //two indices and optimal pairwise distance
 			}
 		}
 	}
 
+	//update Position
 	for i := 0; i < len(grState.position); i++ {
 		modD := modDelta(grState.disp[i])
 		grState.position[i].x += (grState.disp[i].x / modD)
@@ -156,32 +159,33 @@ func spring() {
 
 		grState.position[i].x = math.Min(math.Max(0, grState.position[i].x), float64(areaX))
 		grState.position[i].y = math.Min(math.Max(0, grState.position[i].y), float64(areaY))
-		fmt.Println(grState.position[i].x)
 	}
 }
 
 func fReplusiveSpring(i, j int, k float64) {
 	var iDelta vec
-	var jDelta vec
 	iDelta.x = grState.position[i].x - grState.position[j].x
 	iDelta.y = grState.position[i].y - grState.position[j].y
 
-	jDelta.x = 0 - iDelta.x
-	jDelta.y = 0 - jDelta.y
-
-	displace(jDelta, j, k)
 	displace(iDelta, i, k)
 }
 
 func fAttractiveSpring(i, j int, k float64) {
 	var delta vec
+	fmt.Println(i, j)
+	fmt.Println(grState.position[i])
+	fmt.Println(grState.position[j])
 	delta.x = grState.position[i].x - grState.position[j].x
 	delta.y = grState.position[i].y - grState.position[j].y
+	fmt.Println("delta")
+	fmt.Println(delta)
 	modD := modDelta(delta)
 
 	dispX := (delta.x / modD) * ((modD * modD) / k)
 	dispY := (delta.y / modD) * ((modD * modD) / k)
-
+	fmt.Println("DispX, Y")
+	fmt.Println(dispX)
+	fmt.Println(dispY)
 	grState.disp[i].x -= dispX
 	grState.disp[i].y -= dispY
 	grState.disp[j].x += dispX
@@ -197,6 +201,11 @@ func displace(delta vec, index int, k float64) {
 }
 
 func modDelta(delta vec) float64 {
-	out := math.Sqrt((delta.x * delta.x) + (delta.y * delta.y))
+	xSquared := delta.x * delta.x
+	ySquared := delta.y * delta.y
+	out := math.Sqrt(xSquared + ySquared)
+	if math.IsNaN(out) == true {
+		log.Fatal("NaN")
+	}
 	return out
 }
