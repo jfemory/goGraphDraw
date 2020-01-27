@@ -10,16 +10,16 @@ import (
 
 //Globals
 const windowTitle = "goGraphDraw"
-const scale = 3
-const windowWidth = 480
-const windowHeight = 320
+const scale = 1
+const windowWidth = 1024
+const windowHeight = 768
 const assetsDir = "assets"
 
 var sprite *ebiten.Image
 
 type state struct {
 	position []pos
-	arcs     [][]arc
+	arcs     [][]int //index dominates next index
 }
 
 type pos struct {
@@ -54,6 +54,7 @@ func update(screen *ebiten.Image) error {
 	//Do stuff goes here
 	//physics
 	screen.Fill(color.RGBA{0xff, 0xff, 0xff, 255})
+	drawArc(screen)
 	drawSprite(screen)
 	updatePosition()
 	return nil
@@ -76,29 +77,40 @@ func initGraph() {
 		log.Fatal(err)
 	}
 	vertNum := 4
-	grState.arcs = make([][]arc, vertNum, vertNum)
+	grState.arcs = make([][]int, vertNum, vertNum)
 	grState.position = make([]pos, vertNum, vertNum)
 
-	grState.arcs[0] = append(grState.arcs[0], arc{1}, arc{2})
-	grState.arcs[1] = append(grState.arcs[1], arc{2})
-	grState.arcs[2] = append(grState.arcs[2], arc{3})
-	grState.arcs[3] = append(grState.arcs[3], arc{0})
+	grState.arcs[0] = append(grState.arcs[0], 1, 2)
+	grState.arcs[1] = append(grState.arcs[1], 2)
+	grState.arcs[2] = append(grState.arcs[2], 3)
+	grState.arcs[3] = append(grState.arcs[3], 0)
 
-	grState.position[0].x = 15.1
-	grState.position[0].y = 20.1
+	grState.position[0].x = 151
+	grState.position[0].y = 201
 
-	grState.position[1].x = 50
-	grState.position[1].y = 50
+	grState.position[1].x = 500
+	grState.position[1].y = 500
 
-	grState.position[2].x = 25
-	grState.position[2].y = 35
+	grState.position[2].x = 250
+	grState.position[2].y = 350
 
-	grState.position[3].x = 30
-	grState.position[3].y = 25
+	grState.position[3].x = 300
+	grState.position[3].y = 250
 	sprite = vertImg
 
 }
 
+func drawArc(screen *ebiten.Image) {
+	for i := 0; i < len(grState.arcs); i++ {
+		var from pos
+		var to pos
+		from = grState.position[i]
+		for j := 0; j < len(grState.arcs[i]); j++ {
+			to = grState.position[grState.arcs[0][1]]
+		}
+		ebitenutil.DrawLine(screen, from.x, from.y, to.x, to.y, color.Black)
+	}
+}
 func drawSprite(screen *ebiten.Image) {
 	for i := 0; i < len(grState.position); i++ {
 		opts := &ebiten.DrawImageOptions{}
