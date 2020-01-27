@@ -78,16 +78,20 @@ func initGraph() {
 	if err != nil {
 		log.Fatal(err)
 	}
-	vertNum := 4
+	vertNum := 8
 	grState.arcs = make([][]int, vertNum, vertNum)
 	grState.position = make([]vec, vertNum, vertNum)
 	grState.disp = make([]vec, vertNum, vertNum)
 
-	grState.arcs[0] = append(grState.arcs[0], 1)
-	grState.arcs[1] = append(grState.arcs[1], 2)
+	grState.arcs[0] = append(grState.arcs[0], 1, 2)
+	grState.arcs[1] = append(grState.arcs[1], 2, 3, 6, 7)
 	grState.arcs[2] = append(grState.arcs[2], 3)
 	grState.arcs[3] = append(grState.arcs[3], 0)
-
+	grState.arcs[4] = append(grState.arcs[4], 5)
+	grState.arcs[5] = append(grState.arcs[5], 3)
+	grState.arcs[6] = append(grState.arcs[6], 5)
+	grState.arcs[7] = append(grState.arcs[7], 5)
+	fmt.Println(grState.arcs)
 	randPos()
 
 	sprite = vertImg
@@ -103,8 +107,9 @@ func drawArc(screen *ebiten.Image) {
 		from = grState.position[i]
 		for j := 0; j < len(grState.arcs[i]); j++ {
 			to = grState.position[grState.arcs[i][j]]
+			ebitenutil.DrawLine(screen, from.x+offset, from.y+offset, to.x+offset, to.y+offset, color.Black)
 		}
-		ebitenutil.DrawLine(screen, from.x+offset, from.y+offset, to.x+offset, to.y+offset, color.Black)
+
 	}
 }
 func drawSprite(screen *ebiten.Image) {
@@ -148,8 +153,8 @@ func spring() {
 		grState.position[i].x += (grState.disp[i].x / modD)
 		grState.position[i].y += (grState.disp[i].y / modD)
 
-		grState.position[i].x = math.Min(math.Max(0, grState.position[i].x), float64(areaX))
-		grState.position[i].y = math.Min(math.Max(0, grState.position[i].y), float64(areaY))
+		grState.position[i].x = math.Min(math.Max(40, grState.position[i].x), float64(areaX-40))
+		grState.position[i].y = math.Min(math.Max(40, grState.position[i].y), float64(areaY-40))
 	}
 }
 
@@ -163,20 +168,14 @@ func fReplusiveSpring(i, j int, k float64) {
 
 func fAttractiveSpring(i, j int, k float64) {
 	var delta vec
-	fmt.Println(i, j)
-	fmt.Println(grState.position[i])
-	fmt.Println(grState.position[j])
+
 	delta.x = grState.position[i].x - grState.position[j].x
 	delta.y = grState.position[i].y - grState.position[j].y
-	fmt.Println("delta")
-	fmt.Println(delta)
+
 	modD := modDelta(delta)
 
 	dispX := (delta.x / modD) * ((modD * modD) / k)
 	dispY := (delta.y / modD) * ((modD * modD) / k)
-	fmt.Println("DispX, Y")
-	fmt.Println(dispX)
-	fmt.Println(dispY)
 	grState.disp[i].x -= dispX
 	grState.disp[i].y -= dispY
 	grState.disp[j].x += dispX
