@@ -102,13 +102,16 @@ func initGraph() {
 
 func drawArc(screen *ebiten.Image) {
 	for i := 0; i < len(grState.arcs); i++ {
+		sizeX, _ := sprite.Size()
+		offset := float64(sizeX) / 2
+		fmt.Println(offset)
 		var from pos
 		var to pos
 		from = grState.position[i]
 		for j := 0; j < len(grState.arcs[i]); j++ {
 			to = grState.position[grState.arcs[0][1]]
 		}
-		ebitenutil.DrawLine(screen, from.x, from.y, to.x, to.y, color.Black)
+		ebitenutil.DrawLine(screen, from.x+offset, from.y+offset, to.x+offset, to.y+offset, color.Black)
 	}
 }
 func drawSprite(screen *ebiten.Image) {
