@@ -7,6 +7,8 @@ import (
 	"image/color"
 	"log"
 	"math"
+	"math/rand"
+	"time"
 )
 
 //Globals
@@ -85,20 +87,9 @@ func initGraph() {
 	grState.arcs[1] = append(grState.arcs[1], 2)
 	grState.arcs[2] = append(grState.arcs[2], 3)
 	grState.arcs[3] = append(grState.arcs[3], 0)
-	fmt.Println(grState.arcs)
 
-	grState.position[0].x = 151
-	grState.position[0].y = 201
+	randPos()
 
-	grState.position[1].x = 500
-	grState.position[1].y = 500
-
-	grState.position[2].x = 250
-	grState.position[2].y = 350
-
-	grState.position[3].x = 300
-	grState.position[3].y = 250
-	fmt.Println(grState.position)
 	sprite = vertImg
 
 }
@@ -208,4 +199,14 @@ func modDelta(delta vec) float64 {
 		log.Fatal("NaN")
 	}
 	return out
+}
+
+//random seeding
+func randPos() {
+	rand.Seed(time.Now().UnixNano())
+
+	for i := 0; i < len(grState.position); i++ {
+		grState.position[i].x = float64(rand.Intn(windowWidth))
+		grState.position[i].y = float64(rand.Intn(windowHeight))
+	}
 }
